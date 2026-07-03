@@ -391,7 +391,7 @@ No GPU required. With Ollama, embeddings are handled by the Ollama server. With 
 
 ## Supported Languages
 
-**AST-aware chunking (tree-sitter parsed, 10 extensions):**
+**AST-aware chunking (tree-sitter parsed, 11 extensions):**
 
 | Language | Extensions |
 |----------|-----------|
@@ -402,13 +402,14 @@ No GPU required. With Ollama, embeddings are handled by the Ollama server. With 
 | Go | `.go` |
 | Rust | `.rs` |
 | Java | `.java` |
+| C# | `.cs` |
 
 **Language-aware fallback chunking (40+ extensions):**
 
 | Category | Languages |
 |----------|-----------|
 | Web | HTML, CSS, SCSS, LESS, Vue, Svelte |
-| Systems | C, C++, C#, Zig, Nim |
+| Systems | C, C++, Zig, Nim |
 | Mobile | Swift, Kotlin, Dart |
 | Functional | Haskell, Scala, Clojure, Elixir, Erlang, F# |
 | Scripting | Ruby, Perl, Lua, R, Bash/Zsh |
