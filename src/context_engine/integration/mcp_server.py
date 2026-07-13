@@ -410,6 +410,10 @@ class ContextEngineMCP:
         self._output_level = persisted_state.get(
             "output_level", config.output_compression
         )
+        self._default_top_k = _clamp_top_k(persisted_state.get("context_top_k", 10))
+        self._default_max_tokens = _clamp_int(
+            persisted_state.get("context_max_tokens"), default=8000, lo=500, hi=50000
+        )
 
         # Session capture — persists decisions and code-area notes across runs.
         # Both the legacy JSON path and the new memory.db path are written to
@@ -587,7 +591,8 @@ class ContextEngineMCP:
 
     def _save_state(self) -> None:
         try:
-            state = {"output_level": self._output_level}
+            state = self._load_state()
+            state["output_level"] = self._output_level
             _atomic_write_text(self._state_path, json.dumps(state))
         except OSError:
             pass
@@ -685,6 +690,10 @@ class ContextEngineMCP:
         entirely, so the bucket undercounts and (worse) real tokens get spent
         that the directive would have shaved.
         """
+        state_level = self._load_state().get("output_level")
+        if state_level in LEVELS:
+            self._output_level = state_level
+
         if not get_output_rules(self._output_level):
             return body
         out = body + (
@@ -726,8 +735,8 @@ class ContextEngineMCP:
                         "type": "object",
                         "properties": {
                             "query": {"type": "string"},
-                            "top_k": {"type": "integer", "default": 10},
-                            "max_tokens": {"type": "integer", "default": 8000},
+                            "top_k": {"type": "integer", "default": self._default_top_k},
+                            "max_tokens": {"type": "integer", "default": self._default_max_tokens},
                         },
                         "required": ["query"],
                     },
@@ -964,19 +973,33 @@ class ContextEngineMCP:
                 ),
             )]
 
-        top_k = _clamp_top_k(args.get("top_k", 10))
-        max_tokens = args.get("max_tokens", 8000)
+        # Dashboard format controls persist context_search defaults in state.json.
+        # Refresh on each call so changes apply without restarting the MCP server,
+        # while explicit tool arguments still take precedence.
+        state = self._load_state()
+        default_top_k = _clamp_top_k(state.get("context_top_k", self._default_top_k))
+        default_max_tokens = _clamp_int(
+            state.get("context_max_tokens", self._default_max_tokens),
+            default=self._default_max_tokens,
+            lo=500,
+            hi=50000,
+        )
+        top_k = _clamp_top_k(args.get("top_k", default_top_k))
+        max_tokens = args.get("max_tokens", default_max_tokens)
         try:
             max_tokens = int(max_tokens)
         except (TypeError, ValueError):
             max_tokens = 8000
 
         # Fetch 2x candidates so overflow can offer references
+        retrieval_stats: dict = {}
         all_chunks = await self._retriever.retrieve(
             query,
             top_k=top_k * 2,
             confidence_threshold=self._config.retrieval_confidence_threshold,
+            marginal_ratio=self._config.retrieval_marginal_ratio,
             max_tokens=None,
+            stats_out=retrieval_stats,
         )
         all_chunks = await self._compressor.compress(all_chunks, self._config.compression_level)
 
@@ -1026,6 +1049,15 @@ class ContextEngineMCP:
 
         body = _format_results_with_overflow(inline_chunks, overflow_chunks)
         body = self._apply_output_compression(body)
+        # Only note omissions the retriever actually made (threshold or
+        # marginal stop) — chunk-count heuristics false-positive on every
+        # query because compression/config filtering also shrink the list.
+        if retrieval_stats.get("dropped_low_value", 0) > 0:
+            note = (
+                "[note: lower-confidence results omitted — lower "
+                "retrieval.marginal_ratio or retrieval.confidence_threshold to include them]"
+            )
+            body = body + "\n" + note
         self._record(raw_tokens, served_tokens, full_file_tokens)
         # Compliance audit log — file:line refs of every served chunk + the
         # score range. Off by default; enable via config.audit_log_enabled.

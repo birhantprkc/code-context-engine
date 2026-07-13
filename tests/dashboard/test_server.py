@@ -258,6 +258,53 @@ def test_set_compression(tmp_path):
     r = client.post("/api/compression", json={"level": "max"})
     assert r.status_code == 200
     assert r.json()["level"] == "max"
+
+
+def test_get_format_config_defaults(tmp_path):
+    client, _ = _make_client(tmp_path)
+    r = client.get("/api/format")
+    assert r.status_code == 200
+    assert r.json() == {
+        "input_preset": "balanced",
+        "top_k": 10,
+        "max_tokens": 8000,
+        "output_level": "standard",
+    }
+
+
+def test_set_format_config_preset_persists_state(tmp_path):
+    client, storage_base = _make_client(tmp_path)
+    r = client.post("/api/format", json={
+        "input_preset": "compact",
+        "top_k": 99,
+        "max_tokens": 50000,
+        "output_level": "lite",
+    })
+    assert r.status_code == 200
+    assert r.json() == {
+        "input_preset": "compact",
+        "top_k": 5,
+        "max_tokens": 4000,
+        "output_level": "lite",
+    }
+    state = json.loads((storage_base / "state.json").read_text())
+    assert state["context_top_k"] == 5
+    assert state["context_max_tokens"] == 4000
+    assert state["output_level"] == "lite"
+
+
+def test_set_format_config_custom_clamps(tmp_path):
+    client, storage_base = _make_client(tmp_path)
+    r = client.post("/api/format", json={
+        "input_preset": "custom",
+        "top_k": 250,
+        "max_tokens": 100000,
+        "output_level": "max",
+    })
+    assert r.status_code == 200
+    assert r.json()["top_k"] == 100
+    assert r.json()["max_tokens"] == 50000
+    assert client.get("/api/status").json()["format_config"]["output_level"] == "max"
     assert json.loads((storage_base / "state.json").read_text())["output_level"] == "max"
 
 
@@ -265,6 +312,31 @@ def test_set_compression_invalid(tmp_path):
     client, _ = _make_client(tmp_path)
     r = client.post("/api/compression", json={"level": "turbo"})
     assert r.status_code == 422
+
+
+def test_set_compression_writes_atomically(tmp_path):
+    """state.json is shared with the MCP server, which reads/writes it
+    atomically; the dashboard must use atomic_write_text too, not a plain
+    write_text that truncates in place. Regression for 2026-07-03 review."""
+    from context_engine import utils
+
+    client, storage_base = _make_client(tmp_path)
+    # Pre-existing state keys must survive the rewrite.
+    (storage_base / "state.json").write_text(
+        json.dumps({"output_level": "standard", "other_key": "keep-me"})
+    )
+    with patch(
+        "context_engine.utils.atomic_write_text", wraps=utils.atomic_write_text
+    ) as spy:
+        r = client.post("/api/compression", json={"level": "max"})
+    assert r.status_code == 200
+    written_paths = [call.args[0] for call in spy.call_args_list]
+    assert storage_base / "state.json" in written_paths
+    state = json.loads((storage_base / "state.json").read_text())
+    assert state["output_level"] == "max"
+    assert state["other_key"] == "keep-me"
+    # No stray tempfiles left behind.
+    assert not list(storage_base.glob("*.tmp"))
 
 
 def test_status_with_versioned_manifest(tmp_path):
