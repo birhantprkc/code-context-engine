@@ -33,9 +33,12 @@ What it does:
 | `--plugin-dir <path>` | Output directory for the plugin (default: `.cce/plugin/`) |
 
 ```bash
-cce init --plugin
-cce init --plugin --plugin-dir ./my-plugin
+cce init --plugin                          # Generate at .cce/plugin/
+cce init --plugin --plugin-dir ~/plugins/  # Custom output directory
+cce init --agent claude --plugin           # Both: agent config + plugin
 ```
+
+The generated directory contains `plugin.json`, `mcp.json`, and `skills/code-context/SKILL.md` conforming to the [Agent Plugins v1.0.0](https://agent-plugins.org) specification. Compatible editors (VS Code, Cursor, Copilot, Codex, ChatGPT, Kiro) discover and load the plugin automatically. The plugin uses `uvx` to launch CCE on demand, so pre-installing the Python package is not required. The default `.cce/plugin/` path is added to `.gitignore` automatically.
 
 ## cce index
 
@@ -181,6 +184,8 @@ Start the MCP server. Called automatically by agents via `.mcp.json`. You do not
 cce serve
 cce serve --project-dir /path/to/project
 ```
+
+When `--project-dir` is not provided, `cce serve` auto-discovers the project root by walking up from the current working directory, looking for `.context-engine.yaml` or `.git/`. This allows the MCP server to work correctly when launched from subdirectories or from an Agent Plugin directory.
 
 ## cce list
 

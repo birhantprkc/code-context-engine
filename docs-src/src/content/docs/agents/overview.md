@@ -59,6 +59,20 @@ Or configure everything at once:
 cce init --agent all
 ```
 
+## Agent Plugin (alternative install)
+
+Instead of per-editor MCP config, you can generate a portable [Agent Plugin](https://agent-plugins.org) directory:
+
+```bash
+cce init --plugin
+```
+
+This creates a `.cce/plugin/` directory containing a manifest, MCP server config, and skill instructions that conform to the Agent Plugins v1.0.0 specification. Editors that support Agent Plugins (VS Code, Cursor, Copilot, Codex, ChatGPT, Kiro) discover and load it automatically.
+
+The plugin uses `uvx` to fetch and run CCE on demand, so team members who install the plugin do not need CCE pre-installed. Both `--agent` and `--plugin` can be used together in the same `cce init` command.
+
+See the [Getting Started](/code-context-engine/guide/getting-started/#agent-plugin) page for more details.
+
 ## Common issues across all agents
 
 ### "cce: command not found"

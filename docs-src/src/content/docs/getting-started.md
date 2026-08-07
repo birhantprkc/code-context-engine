@@ -60,12 +60,21 @@ cce init --agent all        # Every supported editor
 
 ### Agent Plugin
 
-Add `--plugin` to generate a portable [Agent Plugin](https://agent-plugins.org) directory. Editors that support the Agent Plugin specification (VS Code, Cursor, Copilot, Codex, ChatGPT, Kiro) will discover and load it automatically.
+Add `--plugin` to generate a portable [Agent Plugin](https://agent-plugins.org) directory. Agent Plugins is an open standard (v1.0.0) for packaging AI skills and MCP servers into zero-install bundles.
 
 ```bash
 cce init --plugin                          # Plugin written to .cce/plugin/
 cce init --plugin --plugin-dir ./my-plugin # Custom output directory
+cce init --agent claude --plugin           # Both: agent config + plugin
 ```
+
+The generated plugin contains a manifest (`plugin.json`), MCP server config (`mcp.json`), and a skill file (`SKILL.md`) with CCE instructions. Compatible editors (VS Code, Cursor, GitHub Copilot, Codex, ChatGPT, Kiro) discover and load it automatically.
+
+The plugin uses `uvx` to launch CCE on demand, so users who install the plugin do not need to pre-install the Python package. The `--plugin` flag is independent of `--agent` and both can be used together.
+
+:::tip
+After upgrading CCE, re-run `cce init --plugin` to regenerate the plugin with the latest version and instructions.
+:::
 
 ## Verify it works
 

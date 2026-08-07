@@ -92,7 +92,9 @@ Restart your editor. Done. Every question now hits the index instead of re-readi
 
 > **Agent Plugin support:** Run `cce init --plugin` to generate a portable
 > [Agent Plugin](https://agent-plugins.org) directory that works with
-> VS Code, Cursor, Copilot, Codex, ChatGPT, and Kiro.
+> VS Code, Cursor, Copilot, Codex, ChatGPT, and Kiro. The plugin uses
+> `uvx` to launch CCE on demand, so users don't need to pre-install the
+> Python package. See [Agent Plugin](#agent-plugin) below.
 
 > **Already have Ollama?** Skip `[local]` and use `uv tool install code-context-engine` instead. CCE auto-detects Ollama at localhost:11434 and uses `nomic-embed-text`.
 
@@ -356,6 +358,47 @@ CCE's cross-session memory depends on the agent calling `record_decision` and `r
 
 7 buckets track every token saved: retrieval, chunk compression, output compression, memory recall, grammar, turn summarization, progressive disclosure. Survives restarts. Powers CLI and dashboard analytics.
 </details>
+
+---
+
+## Agent Plugin
+
+[Agent Plugins](https://agent-plugins.org) is an open standard (v1.0.0) backed by Amazon, Cursor, Microsoft, OpenAI, and Vercel for packaging AI skills and MCP servers into portable, zero-install bundles. CCE can generate a plugin directory that compatible editors discover and load automatically.
+
+```bash
+cce init --plugin                          # Generate at .cce/plugin/
+cce init --plugin --plugin-dir ~/plugins/cce  # Custom location
+cce init --agent claude --plugin           # Both: agent config + plugin
+```
+
+### What gets generated
+
+```
+.cce/plugin/
+├── plugin.json                       # Agent Plugins v1.0.0 manifest
+├── mcp.json                          # MCP server config (uvx + stdio)
+├── skills/
+│   └── code-context/
+│       ├── SKILL.md                  # Agent instructions (frontmatter + body)
+│       └── references/
+│           └── tools.md              # Per-tool parameter docs (loaded on demand)
+└── LICENSE
+```
+
+### Compatible editors
+
+VS Code, GitHub Copilot, ChatGPT, Codex, Cursor, and Kiro. The plugin uses `uvx` to launch CCE on demand, so users do not need to pre-install the Python package. The MCP server auto-discovers the project root by walking up from its working directory, looking for `.context-engine.yaml` or `.git/`.
+
+### When to use `--plugin` vs `--agent`
+
+| | `--agent` (default) | `--plugin` |
+|---|---|---|
+| Install method | Writes editor-specific config files | Generates a portable plugin directory |
+| Zero-install | No, CCE must be on PATH | Yes, `uvx` fetches CCE on demand |
+| Instruction updates | Stale until `cce init` re-run | Stale until `cce init --plugin` re-run |
+| Best for | Your own machine | Sharing with a team or distributing |
+
+Both can be used together. `--agent` handles per-editor MCP config, `--plugin` provides a portable alternative.
 
 ---
 
