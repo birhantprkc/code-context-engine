@@ -20,6 +20,7 @@ from __future__ import annotations
 import json
 import re
 import tomllib
+from functools import lru_cache
 from pathlib import Path
 
 from context_engine.utils import atomic_write_text, resolve_cce_binary
@@ -97,45 +98,21 @@ EDITORS: dict[str, dict] = {
 
 # ── Instruction file definitions ──────────────────────────────────────
 
-# Editor-agnostic CCE instructions (no "Claude Code" references)
-_CCE_INSTRUCTIONS_BASE = """\
-## Context Engine (CCE)
-
-This project uses Code Context Engine for intelligent code retrieval and
-cross-session memory.
-
-### Searching the codebase
-
-**Use `context_search` instead of reading files directly** when exploring
-the codebase, answering questions about code, or understanding how things
-work. `context_search` returns the most relevant code chunks with
-confidence scores instead of whole files.
-
-When to use `context_search`:
-- Answering questions about the codebase ("how does X work?", "where is Y?")
-- Exploring structure or architecture
-- Finding related code, functions, or patterns
-
-Other tools:
-- `expand_chunk` for full source of a compressed result
-- `related_context` for what calls/imports a function
-- `session_recall` to recall past decisions
-
-### Cross-session memory
-
-Call `session_recall("topic phrase")` before answering non-trivial questions.
-Call `record_decision(decision="...", reason="...")` after making choices.
-Call `record_code_area(file_path="...", description="...")` after meaningful work.
-"""
+@lru_cache(maxsize=1)
+def get_instructions_base() -> str:
+    """Load the agent-neutral instruction template from data/instructions.md."""
+    path = Path(__file__).parent / "data" / "instructions.md"
+    return path.read_text(encoding="utf-8")
 
 
 def _build_instructions(output_level: str = "standard") -> str:
     """Build CCE instructions with the configured output style."""
     from context_engine.compression.output_rules import get_instruction_output_block
+    base = get_instructions_base()
     block = get_instruction_output_block(output_level)
     if block:
-        return _CCE_INSTRUCTIONS_BASE + "\n" + block + "\n"
-    return _CCE_INSTRUCTIONS_BASE
+        return base + "\n" + block + "\n"
+    return base
 
 
 # Default instructions (standard output compression)
