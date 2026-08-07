@@ -41,6 +41,8 @@ CCE parses your code into semantic chunks (functions, classes, modules) using Tr
 | OpenCode | `opencode.json` | |
 | Tabnine | `.tabnine/agent/settings.json` | `TABNINE.md` |
 
+CCE also supports [Agent Plugins](https://agent-plugins.org) (`cce init --plugin`), a portable zero-install alternative that works across VS Code, Cursor, Copilot, Codex, ChatGPT, and Kiro without per-editor config files.
+
 ## How it works
 
 1. **Index** — Tree-sitter parses code into semantic chunks. Stored locally with vector embeddings.

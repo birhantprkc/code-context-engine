@@ -765,4 +765,10 @@ cce serve --project-dir /path/to/your/project
 cce serve --http
 ```
 
+### Project auto-discovery
+
+When `--project-dir` is not provided, `cce serve` walks up from the current working directory to find the project root. It checks each directory for `.context-engine.yaml` (explicit CCE project marker) or `.git/` (any git repo). This means the MCP server works correctly when launched from a subdirectory or from an Agent Plugin directory inside the project.
+
+### HTTP endpoint
+
 When `--http` is passed, the server also listens on an HTTP port and exposes a `POST /search` endpoint. This is useful for custom agent integrations that speak HTTP instead of MCP stdio. The endpoint accepts JSON with `query`, `top_k` (1..100), and `confidence_threshold` (0.0..1.0), and returns ranked results with confidence scores.
