@@ -897,8 +897,10 @@ def _init_instruction_targets(editor_targets: set[str]) -> set[str]:
     show_default=True,
     help="Agent/editor target: auto, claude, codex, copilot, pi, or all.",
 )
+@click.option("--plugin", "gen_plugin", is_flag=True, help="Generate an Agent Plugin directory")
+@click.option("--plugin-dir", default=None, type=click.Path(), help="Plugin output directory (default: .cce/plugin/)")
 @click.pass_context
-def init(ctx: click.Context, agent: str) -> None:
+def init(ctx: click.Context, agent: str, gen_plugin: bool, plugin_dir: str | None) -> None:
     """Initialize context engine and connect it to AI coding agents."""
     from context_engine.indexer.git_hooks import install_hooks
     from context_engine.project_commands import ensure_gitignore
@@ -2769,6 +2771,27 @@ def upgrade(ctx: click.Context, check: bool) -> None:
         if (project_dir / ".git").exists():
             install_hooks(str(project_dir))
             _ok("Git hooks refreshed")
+
+    # Agent Plugin generation
+    if gen_plugin:
+        from context_engine.editors import generate_plugin
+        from importlib.metadata import version as pkg_version
+        try:
+            ver = pkg_version("code-context-engine")
+        except Exception:
+            ver = "0.0.0"
+        plugin_out = Path(plugin_dir) if plugin_dir else project_dir / ".cce" / "plugin"
+        generate_plugin(plugin_out, version=ver, output_level=output_level)
+        _ok("Agent Plugin generated at " + click.style(str(plugin_out), fg="cyan"))
+        # Add default plugin path to .gitignore
+        if not plugin_dir:
+            gitignore = project_dir / ".gitignore"
+            gi_content = gitignore.read_text(encoding="utf-8") if gitignore.exists() else ""
+            if ".cce/plugin/" not in gi_content:
+                gitignore.write_text(
+                    gi_content.rstrip() + "\n\n# CCE Agent Plugin (generated)\n.cce/plugin/\n",
+                    encoding="utf-8",
+                )
 
     click.echo("")
     click.echo(

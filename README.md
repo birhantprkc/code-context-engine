@@ -90,6 +90,10 @@ cce init
 
 Restart your editor. Done. Every question now hits the index instead of re-reading files.
 
+> **Agent Plugin support:** Run `cce init --plugin` to generate a portable
+> [Agent Plugin](https://agent-plugins.org) directory that works with
+> VS Code, Cursor, Copilot, Codex, ChatGPT, and Kiro.
+
 > **Already have Ollama?** Skip `[local]` and use `uv tool install code-context-engine` instead. CCE auto-detects Ollama at localhost:11434 and uses `nomic-embed-text`.
 
 <details>
@@ -359,6 +363,7 @@ CCE's cross-session memory depends on the agent calling `record_decision` and `r
 
 ```bash
 cce init                    # Index + install hooks + register MCP
+cce init --plugin           # Generate Agent Plugin for VS Code, Cursor, etc.
 cce                         # Status banner
 cce savings                 # Token savings with dollar estimates
 cce savings --all           # All projects

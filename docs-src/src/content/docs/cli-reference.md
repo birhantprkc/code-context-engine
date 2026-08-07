@@ -25,6 +25,18 @@ What it does:
 - Creates or updates agent instruction files.
 - Adds per-machine files to `.gitignore`.
 
+**Agent Plugin flags:**
+
+| Flag | Description |
+|------|-------------|
+| `--plugin` | Generate an [Agent Plugin](https://agent-plugins.org) directory alongside the MCP config |
+| `--plugin-dir <path>` | Output directory for the plugin (default: `.cce/plugin/`) |
+
+```bash
+cce init --plugin
+cce init --plugin --plugin-dir ./my-plugin
+```
+
 ## cce index
 
 Re-index files that have changed since the last run.
