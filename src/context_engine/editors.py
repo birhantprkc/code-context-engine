@@ -682,3 +682,108 @@ def remove_instruction_file(project_dir: Path, file_key: str) -> str | None:
     else:
         path.unlink()
         return f"Removed {info['name']}"
+
+
+# ── Agent Plugin generation ──────────────────────────────────────────
+
+
+def generate_plugin(
+    output_dir: Path,
+    version: str,
+    output_level: str = "standard",
+) -> None:
+    """Generate an Agent Plugins v1.0.0 directory.
+
+    Writes plugin.json, mcp.json, and skills/code-context/SKILL.md to
+    ``output_dir``. Safe to call repeatedly (overwrites existing files).
+    """
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    # plugin.json
+    plugin_manifest = {
+        "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+        "name": "code-context-engine",
+        "version": version,
+        "description": (
+            "Index your codebase. AI searches instead of re-reading files. "
+            "94% token savings."
+        ),
+        "author": {
+            "name": "Elara Labs",
+            "url": "https://github.com/elara-labs/code-context-engine",
+        },
+        "repository": "https://github.com/elara-labs/code-context-engine",
+        "license": "MIT",
+        "keywords": [
+            "code-search",
+            "token-savings",
+            "mcp",
+            "code-indexing",
+            "retrieval",
+        ],
+    }
+    (output_dir / "plugin.json").write_text(
+        json.dumps(plugin_manifest, indent=2) + "\n", encoding="utf-8"
+    )
+
+    # mcp.json
+    mcp_config = {
+        "$schema": "https://agent-plugins.org/schemas/1.0.0/mcp.schema.json",
+        "mcpServers": {
+            "code-context-engine": {
+                "type": "stdio",
+                "command": "uvx",
+                "args": [
+                    "--from",
+                    "code-context-engine[local]",
+                    "cce",
+                    "serve",
+                ],
+            },
+        },
+    }
+    (output_dir / "mcp.json").write_text(
+        json.dumps(mcp_config, indent=2) + "\n", encoding="utf-8"
+    )
+
+    # skills/code-context/SKILL.md
+    skill_dir = output_dir / "skills" / "code-context"
+    skill_dir.mkdir(parents=True, exist_ok=True)
+
+    description = (
+        "Intelligent code retrieval and cross-session memory for AI coding "
+        "agents. Use when searching codebases, answering questions about "
+        "code, exploring architecture, finding functions or patterns, or "
+        "recalling past decisions. Provides context_search, expand_chunk, "
+        "related_context, session_recall, record_decision, record_code_area, "
+        "and set_output_compression MCP tools."
+    )
+    frontmatter = (
+        "---\n"
+        "name: code-context\n"
+        f"description: >\n"
+        + "".join(f"  {line}\n" for line in description.splitlines())
+        + "license: MIT\n"
+        "compatibility: Requires Python 3.11+ and uv (or uvx)\n"
+        "metadata:\n"
+        "  author: elara-labs\n"
+        f'  version: "{version}"\n'
+        "---\n\n"
+    )
+    body = _build_instructions(output_level)
+    (skill_dir / "SKILL.md").write_text(frontmatter + body, encoding="utf-8")
+
+    # skills/code-context/references/tools.md
+    ref_dir = skill_dir / "references"
+    ref_dir.mkdir(parents=True, exist_ok=True)
+    tools_ref = (Path(__file__).parent / "data" / "tools_reference.md").read_text(
+        encoding="utf-8"
+    )
+    (ref_dir / "tools.md").write_text(tools_ref, encoding="utf-8")
+
+    # LICENSE (copy from package root if available)
+    pkg_license = Path(__file__).parent.parent.parent / "LICENSE"
+    if pkg_license.exists():
+        (output_dir / "LICENSE").write_text(
+            pkg_license.read_text(encoding="utf-8"), encoding="utf-8"
+        )
