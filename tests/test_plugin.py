@@ -4,6 +4,7 @@ from pathlib import Path
 
 import yaml
 
+from context_engine.cli import _discover_project_root
 from context_engine.editors import generate_plugin, get_instructions_base
 
 
@@ -94,3 +95,48 @@ def test_generate_plugin_overwrites_existing(tmp_path):
 
     data = json.loads((out / "plugin.json").read_text())
     assert data["version"] == "2.0.0"
+
+
+# ── Project auto-discovery tests ─────────────────────────────────────
+
+
+def test_discover_project_root_finds_git(tmp_path):
+    """Walk-up finds .git directory."""
+    project = tmp_path / "myproject"
+    project.mkdir()
+    (project / ".git").mkdir()
+    subdir = project / "src" / "deep"
+    subdir.mkdir(parents=True)
+
+    assert _discover_project_root(subdir) == project
+
+
+def test_discover_project_root_finds_context_engine_yaml(tmp_path):
+    """Walk-up finds .context-engine.yaml."""
+    project = tmp_path / "myproject"
+    project.mkdir()
+    (project / ".context-engine.yaml").write_text("indexer:\n  watch: true\n")
+    subdir = project / "src"
+    subdir.mkdir()
+
+    assert _discover_project_root(subdir) == project
+
+
+def test_discover_project_root_prefers_context_engine_yaml(tmp_path):
+    """When .context-engine.yaml is found first on walk-up, it wins."""
+    root = tmp_path / "root"
+    root.mkdir()
+    (root / ".git").mkdir()
+    inner = root / "inner"
+    inner.mkdir()
+    (inner / ".context-engine.yaml").write_text("")
+
+    assert _discover_project_root(inner) == inner
+
+
+def test_discover_project_root_returns_none(tmp_path):
+    """Returns None when no project markers found."""
+    bare = tmp_path / "bare"
+    bare.mkdir()
+
+    assert _discover_project_root(bare) is None

@@ -23,6 +23,25 @@ from context_engine.config import load_config, resolve_ollama_url, PROJECT_CONFI
 from context_engine.utils import project_storage_dir
 
 
+def _discover_project_root(start: Path) -> Path | None:
+    """Walk up from *start* looking for a project root marker.
+
+    Checks each directory for .context-engine.yaml (explicit CCE project)
+    or .git/ (any git repo). Returns the first match, or None at the
+    filesystem root.
+    """
+    current = start.resolve()
+    while True:
+        if (current / ".context-engine.yaml").exists():
+            return current
+        if (current / ".git").exists():
+            return current
+        parent = current.parent
+        if parent == current:
+            return None
+        current = parent
+
+
 def _safe_cwd() -> Path:
     """Return `Path.cwd()` or raise a `click.ClickException` with a
     friendly, actionable error if the OS denies access.
@@ -2792,6 +2811,15 @@ def serve(ctx: click.Context, as_http: bool, host: str, port: int, project_dir: 
         ctx.obj["config"] = load_config(
             project_path=target_config if target_config.exists() else None
         )
+    else:
+        discovered = _discover_project_root(Path.cwd())
+        if discovered and discovered != Path.cwd():
+            import os
+            os.chdir(str(discovered))
+            target_config = discovered / PROJECT_CONFIG_NAME
+            ctx.obj["config"] = load_config(
+                project_path=target_config if target_config.exists() else None
+            )
     if as_http:
         from context_engine.serve_http import run_http_server
         run_http_server(ctx.obj["config"], host=host, port=port)
