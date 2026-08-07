@@ -9,7 +9,7 @@
   <meta property="og:description" content="Stop paying to re-read code. Works with Claude Code, Cursor, Codex, Copilot, Gemini CLI. Index once, save 94%. Local, free, open source.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://elara-labs.github.io/code-context-engine/">
-  <meta name="keywords" content="save AI coding tokens, reduce Claude Code costs, save Cursor tokens, Codex MCP server, Copilot token savings, Gemini CLI tokens, Code Context Engine, MCP server for coding, reduce AI coding costs, code indexing MCP, save Claude tokens, save Codex tokens, reduce Copilot costs, AI coding agent tokens, local code indexing">
+  <meta name="keywords" content="save AI coding tokens, reduce Claude Code costs, save Cursor tokens, Codex MCP server, Copilot token savings, Gemini CLI tokens, Code Context Engine, MCP server for coding, reduce AI coding costs, code indexing MCP, save Claude tokens, save Codex tokens, reduce Copilot costs, AI coding agent tokens, local code indexing, agent plugin, Kiro, ChatGPT agent plugin">
   <link rel="canonical" href="https://elara-labs.github.io/code-context-engine/">
   <link rel="icon" type="image/svg+xml" href="logo.svg">
   <script type="application/ld+json">
@@ -935,6 +935,9 @@
         <div class="install-alt">
           or: <a href="https://pypi.org/project/code-context-engine/" target="_blank">pipx install "code-context-engine[local]"</a> · Ollama users: skip [local]
         </div>
+        <div class="install-alt" style="margin-top:2px">
+          <span style="color:var(--cyan);font-weight:500">Agent Plugin:</span> <code style="font-size:12px;padding:2px 6px">cce init --plugin</code> <span style="color:var(--text3)">zero-install for VS Code, Cursor, Copilot, Codex, ChatGPT, Kiro</span>
+        </div>
       </div>
 
     </div>
@@ -983,6 +986,8 @@
     <span class="editor-badge"><svg width="28" height="28" viewBox="0 0 24 24" fill="#ffffff"><path d="M22.282 9.821a5.985 5.985 0 0 0-.516-4.91 6.046 6.046 0 0 0-6.51-2.9A6.065 6.065 0 0 0 4.981 4.18a5.985 5.985 0 0 0-3.998 2.9 6.046 6.046 0 0 0 .743 7.097 5.98 5.98 0 0 0 .51 4.911 6.051 6.051 0 0 0 6.515 2.9A5.985 5.985 0 0 0 13.26 24a6.056 6.056 0 0 0 5.772-4.206 5.99 5.99 0 0 0 3.997-2.9 6.056 6.056 0 0 0-.747-7.073zM13.26 22.43a4.476 4.476 0 0 1-2.876-1.04l.141-.081 4.779-2.758a.795.795 0 0 0 .392-.681v-6.737l2.02 1.168a.071.071 0 0 1 .038.052v5.583a4.504 4.504 0 0 1-4.494 4.494zM3.6 18.304a4.47 4.47 0 0 1-.535-3.014l.142.085 4.783 2.759a.771.771 0 0 0 .78 0l5.843-3.369v2.332a.08.08 0 0 1-.033.062L9.74 19.95a4.5 4.5 0 0 1-6.14-1.646zM2.34 7.896a4.485 4.485 0 0 1 2.366-1.973V11.6a.766.766 0 0 0 .388.676l5.815 3.355-2.02 1.168a.076.076 0 0 1-.071 0l-4.83-2.786A4.504 4.504 0 0 1 2.34 7.872zm16.597 3.855l-5.833-3.387L15.119 7.2a.076.076 0 0 1 .071 0l4.83 2.791a4.494 4.494 0 0 1-.676 8.105v-5.678a.79.79 0 0 0-.407-.667zm2.01-3.023l-.141-.085-4.774-2.782a.776.776 0 0 0-.785 0L9.409 9.23V6.897a.066.066 0 0 1 .028-.061l4.83-2.787a4.5 4.5 0 0 1 6.68 4.66zm-12.64 4.135l-2.02-1.164a.08.08 0 0 1-.038-.057V6.075a4.5 4.5 0 0 1 7.375-3.453l-.142.08L8.704 5.46a.795.795 0 0 0-.393.681zm1.097-2.365l2.602-1.5 2.607 1.5v2.999l-2.597 1.5-2.607-1.5z"/></svg>Codex CLI</span>
     <span class="editor-badge"><img src="https://opencode.ai/favicon.svg" alt="OpenCode" style="width:28px;height:28px">OpenCode</span>
     <span class="editor-badge"><img src="https://www.tabnine.com/favicon.ico" alt="Tabnine" style="width:28px;height:28px;border-radius:6px">Tabnine</span>
+    <span class="editor-badge"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="24" height="24" rx="5" fill="#1a1a2e"/><path d="M7 6l5 6-5 6M13 6l5 6-5 6" stroke="#00c8f0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>Kiro</span>
+    <a href="https://agent-plugins.org" target="_blank" rel="noopener" class="editor-badge" style="border-color:rgba(0,200,240,.25);text-decoration:none;color:var(--text)"><svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect width="28" height="28" rx="7" fill="rgba(0,200,240,0.1)"/><path d="M8 10h12M8 14h8M8 18h5" stroke="#00c8f0" stroke-width="2" stroke-linecap="round"/></svg>Agent Plugin</a>
   </div>
 </div>
 
@@ -1171,6 +1176,21 @@
         <div class="feat-title">Web Dashboard</div>
         <p class="feat-body">Run <code>cce dashboard</code> for donut charts, bar graphs, file health, and live 5-second polling. Or use <code>cce savings</code> for a quick terminal summary.</p>
       </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:var(--cyan-dim)">🔌</div>
+        <div class="feat-title">Agent Plugin (Zero Install)</div>
+        <p class="feat-body">Run <code>cce init --plugin</code> to generate a portable <a href="https://agent-plugins.org" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none">Agent Plugin</a> directory. VS Code, Cursor, Copilot, Codex, ChatGPT, and Kiro load it automatically. Uses <code>uvx</code> so users don't need CCE pre-installed.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:var(--green-dim)">🔄</div>
+        <div class="feat-title">Project Auto-Discovery</div>
+        <p class="feat-body">The MCP server walks up from its working directory to find <code>.context-engine.yaml</code> or <code>.git/</code>. Works from subdirectories, plugin roots, or any launch point. No <code>--project-dir</code> needed.</p>
+      </div>
+      <div class="feat-card">
+        <div class="feat-icon" style="background:var(--purple-dim)">📦</div>
+        <div class="feat-title">Single Source Instructions</div>
+        <p class="feat-body">One instruction template powers all writers: Agent Plugin SKILL.md, CLAUDE.md, .cursorrules, AGENTS.md, and every other instruction file. Update once, all formats stay in sync.</p>
+      </div>
     </div>
   </div>
 </section>
@@ -1226,6 +1246,13 @@
             <td class="no">✗</td>
             <td class="no">✗</td>
             <td class="no hl">✗</td>
+            <td class="yes hl">✓</td>
+          </tr>
+          <tr>
+            <td class="row-head">Agent Plugin (zero-install)</td>
+            <td class="no">✗</td>
+            <td class="no">✗</td>
+            <td class="yes hl">✓</td>
             <td class="yes hl">✓</td>
           </tr>
           <tr>
@@ -1307,6 +1334,10 @@
       <div class="step-chip"><span class="step-num">3</span> Restart editor</div>
       <span class="step-arrow">→</span>
       <div class="step-chip"><span class="step-num done">✓</span> Saving tokens</div>
+    </div>
+
+    <div style="margin-top:28px;font-size:14px;color:var(--text3)">
+      Or generate an <a href="https://agent-plugins.org" target="_blank" rel="noopener" style="color:var(--cyan);text-decoration:none">Agent Plugin</a> for zero-install distribution: <code style="font-size:13px">cce init --plugin</code>
     </div>
   </div>
 </section>
