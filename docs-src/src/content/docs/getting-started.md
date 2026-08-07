@@ -58,6 +58,15 @@ cce init --agent pi         # Pi only
 cce init --agent all        # Every supported editor
 ```
 
+### Agent Plugin
+
+Add `--plugin` to generate a portable [Agent Plugin](https://agent-plugins.org) directory. Editors that support the Agent Plugin specification (VS Code, Cursor, Copilot, Codex, ChatGPT, Kiro) will discover and load it automatically.
+
+```bash
+cce init --plugin                          # Plugin written to .cce/plugin/
+cce init --plugin --plugin-dir ./my-plugin # Custom output directory
+```
+
 ## Verify it works
 
 Restart your editor, then ask a question about your code. The agent will call `context_search` via MCP instead of reading files.

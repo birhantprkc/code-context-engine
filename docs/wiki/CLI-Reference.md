@@ -169,6 +169,22 @@ target a specific integration instead of auto-detection.
 - Creates or updates agent instruction files (`CLAUDE.md`, `AGENTS.md`, or `.github/copilot-instructions.md`)
 - Adds per-machine files to `.gitignore`
 
+### Agent Plugin generation
+
+Use `--plugin` to generate a portable [Agent Plugin](https://agent-plugins.org) directory alongside the standard MCP config. The plugin directory can be loaded by VS Code, Cursor, Copilot, Codex, ChatGPT, and Kiro without any additional configuration.
+
+```bash
+cce init --plugin                          # Generate plugin in default location (.cce/plugin/)
+cce init --plugin --plugin-dir ./my-plugin # Generate plugin in a custom directory
+```
+
+| Flag | Description |
+|------|-------------|
+| `--plugin` | Generate an Agent Plugin directory in addition to MCP config |
+| `--plugin-dir <path>` | Output directory for the plugin (default: `.cce/plugin/`) |
+
+The generated directory contains a manifest and tool definitions that conform to the [Agent Plugin specification](https://agent-plugins.org). Editors that support Agent Plugins will discover and load it automatically.
+
 ---
 
 ## cce index
